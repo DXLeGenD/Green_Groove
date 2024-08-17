@@ -2,26 +2,19 @@ import { useState } from "react";
 import { FaTrash } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
-const CartItems = (props: { photo: any; productId: any; price: any; name: any; quantity: any; }) => {
+const CartItems = (props: { photo: any; productId: any; price: any; name: any; quantity: any; incHandler: () => void; decHandler: () => void; remHandler: () => void; }) => {
     const {
         photo,
         productId,
         price,
         name,
         quantity,
+        incHandler,
+        decHandler,
+        remHandler
     } = props
-    function incrementHandler() {
-        setProductQuantity((prev: 0) => prev + 1);
-    }
-    function decrementHandler() {
-        if (productQuantity > 0) {
-            setProductQuantity((prev: 0) => prev - 1);
-        }
-    }
-    function removeHandler(productId: any) {
-        console.log(productId)
-    }
-    const [productQuantity, setProductQuantity] = useState(quantity)
+
+
     return (
         <div className="cart-item">
             <img src={photo} alt={name} />
@@ -31,12 +24,12 @@ const CartItems = (props: { photo: any; productId: any; price: any; name: any; q
             </article>
 
             <div>
-                <button onClick={() => decrementHandler()}>-</button>
-                <p>{productQuantity}</p>
-                <button onClick={() => incrementHandler()}>+</button>
+                <button onClick={() => decHandler()}>-</button>
+                <p>{quantity}</p>
+                <button onClick={() => incHandler()}>+</button>
             </div>
 
-            <button onClick={() => removeHandler(productId)}>
+            <button onClick={() => remHandler()}>
                 <FaTrash />
             </button>
         </div>

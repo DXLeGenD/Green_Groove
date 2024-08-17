@@ -1,72 +1,6 @@
-// import { Link } from "react-router-dom";
-// import {
-//     FaSearch,
-//     FaShoppingBag,
-//     FaSignInAlt,
-//     FaUser,
-//     FaSignOutAlt,
-// } from "react-icons/fa";
-// import { useState } from "react";
-
-
-
-
-// const Header = () => {
-//     const [isOpen, setIsOpen] = useState<boolean>(false);
-//     const user = { _id: "ihasfh", role: "admin" }
-
-//     const logoutHandler = async () => {
-//         try {
-
-//         } catch (error) {
-
-//         }
-//     };
-
-//     return (
-//         <nav className="header">
-//             <Link onClick={() => setIsOpen(false)} to={"/"}>
-//                 HOME
-//             </Link>
-//             <Link onClick={() => setIsOpen(false)} to={"/search"}>
-//                 <FaSearch />
-//             </Link>
-//             <Link onClick={() => setIsOpen(false)} to={"/cart"}>
-//                 <FaShoppingBag />
-//             </Link>
-
-//             {user?._id ? (
-//                 <>
-//                     <button onClick={() => setIsOpen((prev) => !prev)}>
-//                         <FaUser />
-//                     </button>
-//                     <dialog open={isOpen}>
-//                         <div>
-//                             {user.role === "admin" && (
-//                                 <Link onClick={() => setIsOpen(false)} to="/admin/dashboard">
-//                                     Admin
-//                                 </Link>
-//                             )}
-
-//                             <Link onClick={() => setIsOpen(false)} to="/orders">
-//                                 Orders
-//                             </Link>
-//                             <button onClick={logoutHandler}>
-//                                 <FaSignOutAlt />
-//                             </button>
-//                         </div>
-//                     </dialog>
-//                 </>
-//             ) : (
-//                 <Link to={"/login"}>
-//                     <FaSignInAlt />
-//                 </Link>
-//             )}
-//         </nav>
-//     );
-// };
-
-// export default Header;
+import { useState, useEffect } from "react";
+import { auth } from "../firebase";
+import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { Link } from "react-router-dom";
 import {
     FaSearch,
@@ -75,17 +9,26 @@ import {
     FaUser,
     FaSignOutAlt,
 } from "react-icons/fa";
-import { useState } from "react";
 
 const Header = () => {
     const [isOpen, setIsOpen] = useState<boolean>(false);
-    const user = { _id: "asafs", role: "admin" }; // Assuming user state here
+    const [user, setUser] = useState<User | null>(null);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            setUser(currentUser);
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     const logoutHandler = async () => {
         try {
-            // Add logout logic here
+            await signOut(auth);
+            setIsOpen(false);
         } catch (error) {
-            // Handle error
+            console.error("Error logging out:", error);
+            alert("Failed to log out. Please try again.");
         }
     };
 
@@ -101,14 +44,14 @@ const Header = () => {
                 <FaShoppingBag />
             </Link>
 
-            {user?._id ? (
+            {user ? (
                 <>
                     <button onClick={() => setIsOpen((prev) => !prev)}>
                         <FaUser />
                     </button>
                     <dialog open={isOpen}>
                         <div>
-                            {user.role === "admin" && (
+                            {user?.email === "admin@example.com" && (
                                 <Link onClick={() => setIsOpen(false)} to="/admin/dashboard">
                                     Admin
                                 </Link>

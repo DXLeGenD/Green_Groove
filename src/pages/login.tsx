@@ -1,53 +1,9 @@
-// import { useState } from "react";
-// import { FcGoogle } from "react-icons/fc";
-
-// const Login = () => {
-//     const [gender, setGender] = useState("");
-//     const [date, setDate] = useState("");
-
-//     const loginHandler = () => {
-//         console.log("Login Successful")
-//     }
-
-
-//     return (
-//         <div className="login">
-//             <main>
-//                 <h1 className="heading">Login</h1>
-
-//                 <div>
-//                     <label>Gender</label>
-//                     <select value={gender} onChange={(e) => setGender(e.target.value)}>
-//                         <option value="">Select Gender</option>
-//                         <option value="male">Male</option>
-//                         <option value="female">Female</option>
-//                     </select>
-//                 </div>
-
-//                 <div>
-//                     <label>Date of birth</label>
-//                     <input
-//                         type="date"
-//                         value={date}
-//                         onChange={(e) => setDate(e.target.value)}
-//                     />
-//                 </div>
-
-//                 <div>
-//                     <p>Already Signed In Once</p>
-//                     <button onClick={loginHandler}>
-//                         <FcGoogle /> <span>Sign in with Google</span>
-//                     </button>
-//                 </div>
-//             </main>
-//         </div>
-//     );
-// }
-
-// export default Login
-
 import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
+import { useNavigate } from "react-router-dom";
+import { auth, googleProvider, db } from "../firebase";
+import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 const Login = () => {
     const [name, setName] = useState("");
@@ -57,23 +13,87 @@ const Login = () => {
     const [gender, setGender] = useState("");
     const [date, setDate] = useState("");
 
-    const loginHandler = () => {
-        console.log("Login Successful");
-        console.log("Name:", name);
-        console.log("Email:", email);
-        console.log("Phone:", phone);
-        console.log("Password:", password);
-        console.log("Gender:", gender);
-        console.log("Date of Birth:", date);
+    const navigate = useNavigate();
+
+    const validateEmail = (email: any) => {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(String(email).toLowerCase());
     };
-    const signUpHandler = () => {
-        console.log("Login Successful");
-        console.log("Name:", name);
-        console.log("Email:", email);
-        console.log("Phone:", phone);
-        console.log("Password:", password);
-        console.log("Gender:", gender);
-        console.log("Date of Birth:", date);
+
+    const signUpHandler = async () => {
+        if (!validateEmail(email)) {
+            alert("Invalid email address");
+            return;
+        }
+
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            await setDoc(doc(db, "users", user.uid), {
+                name,
+                email,
+                phone,
+                gender,
+                dateOfBirth: date,
+                role: "normal"
+            });
+
+            console.log("Account created successfully");
+            navigate("/");
+        } catch (error: any) {
+            let errorMessage = "Error creating account";
+            switch (error.code) {
+                case "auth/email-already-in-use":
+                    errorMessage = "The email address is already in use by another account.";
+                    break;
+                case "auth/invalid-email":
+                    errorMessage = "The email address is not valid.";
+                    break;
+                case "auth/weak-password":
+                    errorMessage = "The password is too weak.";
+                    break;
+                default:
+                    errorMessage = error.message;
+            }
+            alert(errorMessage);
+            console.error(errorMessage, error);
+        }
+    };
+
+    const loginHandler = async () => {
+        try {
+            const result = await signInWithPopup(auth, googleProvider);
+            const user = result.user;
+
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (!userDoc.exists()) {
+                await setDoc(doc(db, "users", user.uid), {
+                    name: user.displayName,
+                    email: user.email,
+                    phone: "",
+                    gender: "",
+                    dateOfBirth: "",
+                });
+            }
+
+            console.log("Login Successful with Google");
+            navigate("/");
+        } catch (error: any) {
+            let errorMessage = "Error logging in with Google";
+            switch (error.code) {
+                case "auth/popup-closed-by-user":
+                    errorMessage = "The popup was closed before completing the sign-in.";
+                    break;
+                case "auth/cancelled-popup-request":
+                    errorMessage = "Only one popup request is allowed at a time.";
+                    break;
+                default:
+                    errorMessage = error.message;
+            }
+            alert(errorMessage);
+            console.error(errorMessage, error);
+        }
     };
 
     return (
@@ -139,6 +159,7 @@ const Login = () => {
                         onChange={(e) => setDate(e.target.value)}
                     />
                 </div>
+
                 <div>
                     <button onClick={signUpHandler}>
                         <span>Create Account</span>
@@ -146,7 +167,6 @@ const Login = () => {
                 </div>
 
                 <div>
-
                     <p>Already have an account</p>
                     <button onClick={loginHandler}>
                         <FcGoogle /> <span>Sign in with Google</span>
