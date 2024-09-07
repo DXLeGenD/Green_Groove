@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import { VscError } from "react-icons/vsc";
 import { Link } from "react-router-dom";
 import CartItemCard from "../components/cart-item";
-import StripeCheckout from "react-stripe-checkout";
 import { getAuth, onAuthStateChanged, User } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
-import { db } from "../firebase"
+// import StripeCheckout from "react-stripe-checkout";
+// import { doc, setDoc, getDoc } from "firebase/firestore";
+// import { db } from "../firebase"
 
 
 interface CartItem {
@@ -81,7 +81,7 @@ const Cart = () => {
         updateCart(updatedCart);
     };
 
-
+    //payment through Stripe
     // const makePayment = (token: any) => {
     //     const body = {
     //         product: {
@@ -100,69 +100,30 @@ const Cart = () => {
     //         body: JSON.stringify(body)
     //     })
     //         .then((response: any) => response.json())
-    //         .then((data: any) => {
+    //         .then(async (data: any) => {
     //             console.log(data);
     //             if (data.error) {
     //                 throw new Error(data.error);
     //             }
-    //             // Clear cart if payment was successful
     //             localStorage.removeItem("cart");
 
     //             const storedCartItems = JSON.parse(localStorage.getItem("cart") || "[]");
     //             setCartItems(storedCartItems);
+    //             const temp = cartItems.toString()
 
-
-
-
-
+    //             // Save the cart items in Firebase Realtime Database
+    //             const userDoc = await getDoc(doc(db, "users", user ? user.uid : "abc"));
+    //             if (!userDoc.exists()) {
+    //                 await setDoc(doc(db, "users", user ? user.uid : "abc"), {
+    //                     data: temp
+    //                 });
+    //             }
     //         })
     //         .catch((err) => {
     //             alert("Error occurred");
     //             console.error(err);
     //         });
     // };
-    const makePayment = (token: any) => {
-        const body = {
-            product: {
-                price: total
-            },
-            token
-        };
-
-        const headers = {
-            "Content-Type": "application/json"
-        };
-
-        return fetch("http://localhost:5000/payment", {
-            method: "POST",
-            headers,
-            body: JSON.stringify(body)
-        })
-            .then((response: any) => response.json())
-            .then(async (data: any) => {
-                console.log(data);
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-                localStorage.removeItem("cart");
-
-                const storedCartItems = JSON.parse(localStorage.getItem("cart") || "[]");
-                setCartItems(storedCartItems);
-                const temp = cartItems.toString()
-
-                // Save the cart items in Firebase Realtime Database
-                const userDoc = await getDoc(doc(db, "users", user ? user.uid : "abc"));
-                if (!userDoc.exists()) {
-                    await setDoc(doc(db, "users", user ? user.uid : "abc"), {
-                        data: temp
-                    });
-                }
-            })
-            .catch((err) => {
-                alert("Error occurred");
-                console.error(err);
-            });
-    };
 
 
     return (
@@ -198,7 +159,7 @@ const Cart = () => {
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value)}
                 />
-                <button className="btn">
+                {/* <button className="btn">
                     <StripeCheckout
                         token={makePayment}
                         stripeKey="pk_test_51Po0L02NDuVlVmYHCzMCsiUk2qn8JO7VjhMAYwgU9OJPq7tbW77XcsdoSqGoSoi7MzRScRb1Kws1V4iGH6OuU4AH00ADz3F7mc"
@@ -206,7 +167,7 @@ const Cart = () => {
                         currency="INR"
                         amount={total * 100} // Stripe expects amount in cents (paise for INR)
                     />
-                </button>
+                </button> */}
 
                 {couponCode &&
                     (isValidCouponCode ? (

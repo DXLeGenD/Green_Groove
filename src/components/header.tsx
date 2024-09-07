@@ -10,6 +10,7 @@ import {
     FaSignOutAlt,
 } from "react-icons/fa";
 
+
 const Header = () => {
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [user, setUser] = useState<User | null>(null);
@@ -51,7 +52,7 @@ const Header = () => {
                     </button>
                     <dialog open={isOpen}>
                         <div>
-                            {user?.email === "admin@example.com" && (
+                            {user?.email === "1si22cs401@sit.ac.in" && (
                                 <Link onClick={() => setIsOpen(false)} to="/admin/dashboard">
                                     Admin
                                 </Link>
